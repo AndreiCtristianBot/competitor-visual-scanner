@@ -5,6 +5,8 @@ dashboard/node_modules/
 # TypeScript compiled output
 src/**/*.js
 src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
 
 # Debug screenshots
 src/debug_screens/
