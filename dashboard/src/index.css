@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.bg-custom-color {
+  background-color: hsl(30, 5%, 11%);
+}
+
+/* Clasa .text-white este deja definită de Tailwind, dar o poți suprascrie dacă dorești */
+.text-white {
+  color: white;
+}
+
+
+body {
+  @apply bg-gray-100 dark:bg-gray-950;
+}
+
+.custom-checkbox::after {
+  color: #111827;
+}
+
+.dark .custom-checkbox::after {
+  color: #f3f4f6;
+}
+
+html.dark, html.dark body {
+  background-color: #030712; /* gray-950 */
+}
+
+html body {
+  background-color: #f3f4f6; /* gray-100 */
+}

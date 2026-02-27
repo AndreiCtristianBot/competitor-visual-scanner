@@ -1,24 +1,35 @@
 {
-  "name": "spike-mvp",
+  "name": "a11y-analyzer-server",
   "version": "1.0.0",
-  "main": "app.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/server/index.js",
+    "start": "node src/server/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "axios": "^1.11.0",
     "body-parser": "^2.2.0",
     "cheerio": "^1.1.2",
     "cookie": "^1.0.2",
     "debug": "^4.3.5",
+    "dotenv": "^17.2.3",
     "express": "^4.19.2",
+    "jimp": "^1.6.0",
     "path-to-regexp": "^8.3.0",
-    "puppeteer": "^24.19.0",
+    "puppeteer": "^24.24.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "sharp": "^0.34.4",
     "tinycolor2": "^1.6.0",
     "wcag-contrast": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.1",
+    "@types/wcag-contrast": "^3.0.3",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.9.3"
   }
 }
