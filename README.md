@@ -146,11 +146,12 @@ Open `http://localhost:3002`, enter one or more URLs (comma-separated), click "G
 
 The idea for this tool came from personal experience. While building a website replica as a learning project in mid-2025, I found myself spending hours copy-pasting colors, fonts, and design details from the original site — constantly switching between DevTools, color pickers, and font inspectors. I realized I wanted all of that information extracted automatically into one place.
 
-To validate whether this was a broader pain point, I conducted user interviews (September 2025) with four professionals:
+To validate whether this was a broader pain point, I conducted user interviews (September 2026) with UI/UX designers and a digital marketing consultant. The consistent feedback was:
 
-- **UI/UX designers** (Lead Product Designer, Product Design Manager) who described the tedium of visiting dozens of sites manually, juggling multiple browser extensions, and assembling findings into presentable formats
-- **A senior UI/UX designer** (NN/g certified) who confirmed the core workflow — receiving competitors in a brief, then visiting each site to analyze logos, colors, and overall design — and noted that extracting useful direction from clients is often harder than the analysis itself
-- **A senior digital marketing consultant** (10+ years experience) who confirmed that competitor data is used in every client engagement, and that attention to visual detail — while highly valued by clients — is one of the most time-consuming parts of the process
+- The process of analyzing competitors visually is manual and repetitive
+- Information is scattered across multiple tools (DevTools, WhatFont, color pickers, accessibility checkers)
+- Accessibility analysis exists but isn't presented in a designer-friendly way
+- Attention to visual detail is valued by clients but time-consuming to deliver
 
 Existing tools like MOAT (Oracle), Google's Deep Research, or manual combinations of WhatFont + color pickers + accessibility checkers each cover a piece of the puzzle, but none provide a unified visual identity report from a single URL.
 
