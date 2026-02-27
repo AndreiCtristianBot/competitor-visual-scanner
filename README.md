@@ -146,7 +146,7 @@ Open `http://localhost:3002`, enter one or more URLs (comma-separated), click "G
 
 The idea for this tool came from personal experience. While building a website replica as a learning project in mid-2025, I found myself spending hours copy-pasting colors, fonts, and design details from the original site — constantly switching between DevTools, color pickers, and font inspectors. I realized I wanted all of that information extracted automatically into one place.
 
-To validate whether this was a broader pain point, I conducted user interviews (September 2026) with UI/UX designers and a digital marketing consultant. The consistent feedback was:
+To validate whether this was a broader pain point, I conducted user interviews (September 2025) with UI/UX designers and a digital marketing consultant. The consistent feedback was:
 
 - The process of analyzing competitors visually is manual and repetitive
 - Information is scattered across multiple tools (DevTools, WhatFont, color pickers, accessibility checkers)
