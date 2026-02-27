@@ -38,7 +38,7 @@ This tool automates the visual extraction part: enter one or more URLs, get a co
 Tested on luxury hotel websites with complex layouts (transparent headers over hero images, sticky navbars with color transitions, SVG logos, cookie consent dialogs):
 
 - ✅ The Belnord (thebelnord.com)
-- ✅ The Palace (thepalace.com)
+- ✅ The Palace (palace.ch)
 
 ## Tech Stack
 
