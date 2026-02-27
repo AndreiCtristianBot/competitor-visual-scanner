@@ -30,3 +30,6 @@ npm-debug.log*
 # Build output
 dashboard/build/
 dist/
+# Keep custom type declarations
+!src/types/
+!src/types/*.d.ts
