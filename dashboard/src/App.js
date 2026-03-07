@@ -1,4 +1,4 @@
-// src/App.js - Înlocuiește în dashboard/src/App.js
+// src/App.js - Replace dashboard/src/App.js
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -48,7 +48,7 @@ function App() {
         return luminance < 0.5;
     };
 
-    /* Helper: color swatch inline */
+    /* Helper: inline color swatch */
     const ColorSwatch = ({ color }) => {
         if (!color || !color.startsWith('#')) return null;
         return (
@@ -61,23 +61,25 @@ function App() {
 
     /* Helper: WCAG status badge */
     const StatusBadge = ({ status }) => {
-        const cls = status === 'PASS'
-            ? 'text-green-700 dark:text-green-400'
-            : status === 'FAIL'
-            ? 'text-red-700 dark:text-red-400'
-            : 'text-yellow-600 dark:text-yellow-400';
+        const cls =
+            status === 'PASS'
+                ? 'text-green-700 dark:text-green-400'
+                : status === 'FAIL'
+                ? 'text-red-700 dark:text-red-400'
+                : 'text-yellow-600 dark:text-yellow-400';
+
         return <span className={`font-mono font-bold ${cls}`}>{status}</span>;
     };
 
     /* =========================
-       FORM SUBMIT
+       FORM SUBMISSION
     ========================= */
 
     const analyzeCompetitors = async (e) => {
         e.preventDefault();
 
         if (!urls.trim()) {
-            setError('Te rog introdu cel puțin un URL');
+            setError('Please enter at least one URL.');
             return;
         }
 
@@ -94,7 +96,7 @@ function App() {
             setResults(response.data);
         } catch (err) {
             setError(
-                'A apărut o eroare: ' +
+                'An error occurred: ' +
                     (err.response?.data?.error || err.message)
             );
         } finally {
@@ -113,7 +115,7 @@ function App() {
                     <h3 className="font-bold text-lg break-all mb-2">
                         {data.url}
                     </h3>
-                    <p className="font-semibold">Analiza a eșuat</p>
+                    <p className="font-semibold">Analysis failed</p>
                     <p className="text-sm">{data.error}</p>
                 </div>
             );
@@ -175,82 +177,89 @@ function App() {
 
         /* =========================
            NON-TEXT → merged into same list
-           Show elements that have at least one problem:
+           Show elements that have at least one issue:
            - FAIL on any WCAG check
            - WARNING status
            - Empty alt on non-icon elements
-           - Element disappears on sticky scroll (normalBgColor exists but stickyBgColor is null)
+           - Element disappears on sticky scroll
+             (normalBgColor exists but stickyBgColor is null)
         ========================= */
 
         const nonTextElements = data?.nonTextElements || [];
         const typeLabels = {
-            'icon-bg-image': 'Iconiță CSS',
-            'social-icon': 'Social Media',
-            'partner-logo': 'Logo Partener',
-            'ui-control': 'Control UI',
+            'icon-bg-image': 'CSS Icon',
+            'social-icon': 'Social Media Icon',
+            'partner-logo': 'Partner Logo',
+            'ui-control': 'UI Control',
         };
 
-        const nonTextAsIssues = nonTextElements.map((el) => {
-            const aaStatus = el.wcag1411?.status || 'WARNING';
-            const aaaStatus = el.enhanced?.status || '—';
-            const stickyAaStatus = el.stickyWcag1411?.status || null;
-            const stickyEnhStatus = el.stickyEnhanced?.status || null;
-            const hasEmptyAlt = el.alt === '' && el.type !== 'icon-bg-image';
+        const nonTextAsIssues = nonTextElements
+            .map((el) => {
+                const aaStatus = el.wcag1411?.status || 'WARNING';
+                const aaaStatus = el.enhanced?.status || '—';
+                const stickyAaStatus = el.stickyWcag1411?.status || null;
+                const stickyEnhStatus = el.stickyEnhanced?.status || null;
+                const hasEmptyAlt =
+                    el.alt === '' && el.type !== 'icon-bg-image';
 
-            // Check if element disappears on sticky scroll
-            // (has a normal background but sticky variant is null/hidden)
-            const disappearsOnSticky = !!(el.normalBgColor && !el.stickyBgColor && el.stickyBgColor !== undefined);
+                // Check whether the element disappears on sticky scroll
+                const disappearsOnSticky = !!(
+                    el.normalBgColor &&
+                    !el.stickyBgColor &&
+                    el.stickyBgColor !== undefined
+                );
 
-            // Check if ANY status is FAIL
-            const hasFail =
-                aaStatus === 'FAIL' ||
-                aaaStatus === 'FAIL' ||
-                stickyAaStatus === 'FAIL' ||
-                stickyEnhStatus === 'FAIL';
+                // Check if ANY status is FAIL
+                const hasFail =
+                    aaStatus === 'FAIL' ||
+                    aaaStatus === 'FAIL' ||
+                    stickyAaStatus === 'FAIL' ||
+                    stickyEnhStatus === 'FAIL';
 
-            // Check if ANY status is WARNING or element disappears on scroll
-            const hasWarning =
-                aaStatus === 'WARNING' ||
-                stickyAaStatus === 'WARNING' ||
-                disappearsOnSticky;
+                // Check if ANY status is WARNING or the element disappears on scroll
+                const hasWarning =
+                    aaStatus === 'WARNING' ||
+                    stickyAaStatus === 'WARNING' ||
+                    disappearsOnSticky;
 
-            // Severity: 'red' if any FAIL, 'yellow' if WARNING/alt=""/disappears, 'none' if all good
-            let severity;
-            if (hasFail) {
-                severity = 'red';
-            } else if (hasWarning || hasEmptyAlt) {
-                severity = 'yellow';
-            } else {
-                severity = 'none';
-            }
+                // Severity: red if any FAIL, yellow if WARNING / alt="" / disappears, none if all is good
+                let severity;
+                if (hasFail) {
+                    severity = 'red';
+                } else if (hasWarning || hasEmptyAlt) {
+                    severity = 'yellow';
+                } else {
+                    severity = 'none';
+                }
 
-            return {
-                isNonText: true,
-                nonTextType: el.type,
-                text: el.label,
-                textColor: el.estimatedColor || null,
-                bgColor: el.bgColor || 'unknown',
-                contrast: el.contrastRatio || null,
-                aaRequired: '3.0:1',
-                aaStatus,
-                aaaRequired: '4.5:1',
-                aaaStatus,
-                note: el.note || '',
-                previewBase64: el.previewBase64 || null,
-                stickyPreviewBase64: el.stickyPreviewBase64 || null,
-                stickyBgColor: el.stickyBgColor || null,
-                normalBgColor: el.normalBgColor || null,
-                stickyContrastRatio: el.stickyContrastRatio || null,
-                stickyWcag1411: el.stickyWcag1411 || null,
-                stickyEnhanced: el.stickyEnhanced || null,
-                disappearsOnSticky,
-                isFail: severity !== 'none',
-                severity,
-                typeLabel: typeLabels[el.type] || el.type,
-                alt: el.alt,
-                href: el.href || null,
-            };
-        }).filter((el) => el.isFail);
+                return {
+                    isNonText: true,
+                    nonTextType: el.type,
+                    text: el.label,
+                    textColor: el.estimatedColor || null,
+                    bgColor: el.bgColor || 'unknown',
+                    contrast: el.contrastRatio || null,
+                    aaRequired: '3.0:1',
+                    aaStatus,
+                    aaaRequired: '4.5:1',
+                    aaaStatus,
+                    note: el.note || '',
+                    previewBase64: el.previewBase64 || null,
+                    stickyPreviewBase64: el.stickyPreviewBase64 || null,
+                    stickyBgColor: el.stickyBgColor || null,
+                    normalBgColor: el.normalBgColor || null,
+                    stickyContrastRatio: el.stickyContrastRatio || null,
+                    stickyWcag1411: el.stickyWcag1411 || null,
+                    stickyEnhanced: el.stickyEnhanced || null,
+                    disappearsOnSticky,
+                    isFail: severity !== 'none',
+                    severity,
+                    typeLabel: typeLabels[el.type] || el.type,
+                    alt: el.alt,
+                    href: el.href || null,
+                };
+            })
+            .filter((el) => el.isFail);
 
         const allIssues = [...failOnly, ...nonTextAsIssues];
 
@@ -261,7 +270,7 @@ function App() {
                 </h3>
 
                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4 dark:border-gray-100">
-                    Raport de Accesibilitate (Contrast Culori)
+                    Accessibility Report (Color Contrast)
                 </h4>
 
                 {allIssues.length > 0 ? (
@@ -270,25 +279,29 @@ function App() {
                             const showContrast = issue.contrast
                                 ? issue.contrast
                                 : '?';
-                            
+
                             const hasImage = !!issue.previewBase64;
                             const isNonText = !!issue.isNonText;
-                            const hasStickyVariant = isNonText && !!issue.stickyPreviewBase64;
+                            const hasStickyVariant =
+                                isNonText && !!issue.stickyPreviewBase64;
 
                             const borderClass = isNonText
-                                ? (issue.severity === 'red'
+                                ? issue.severity === 'red'
                                     ? 'border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30'
-                                    : 'border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/30')
+                                    : 'border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/30'
                                 : 'border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30';
 
                             let headerLabel, headerColor;
                             if (isNonText) {
-                                headerLabel = `Element Non-text — ${issue.typeLabel}`;
-                                headerColor = issue.severity === 'red'
-                                    ? 'text-red-800 dark:text-red-300'
-                                    : 'text-yellow-800 dark:text-yellow-300';
+                                headerLabel = `Non-text Element — ${issue.typeLabel}`;
+                                headerColor =
+                                    issue.severity === 'red'
+                                        ? 'text-red-800 dark:text-red-300'
+                                        : 'text-yellow-800 dark:text-yellow-300';
                             } else {
-                                headerLabel = hasImage ? 'Problemă pe fundal Imagine:' : 'Problemă de contrast detectată:';
+                                headerLabel = hasImage
+                                    ? 'Issue detected on image background:'
+                                    : 'Contrast issue detected:';
                                 headerColor = 'text-red-800 dark:text-red-300';
                             }
 
@@ -310,7 +323,7 @@ function App() {
                                             <div className="mt-2 mb-2">
                                                 <div className="text-xs text-gray-700 space-y-1 mb-1 dark:text-gray-400 dark:space-y-1">
                                                     <div className="font-mono font-bold flex items-center gap-1">
-                                                        Bg înainte de scroll:
+                                                        Background before scroll:
                                                         <ColorSwatch color={issue.bgColor} />
                                                         <span>{issue.bgColor}</span>
                                                     </div>
@@ -318,20 +331,30 @@ function App() {
                                                         <strong>WCAG 1.4.11 (3:1): </strong>
                                                         <StatusBadge status={issue.aaStatus} />
                                                         {issue.contrast && (
-                                                            <span className="font-mono ml-1 text-gray-500">({issue.contrast}:1)</span>
+                                                            <span className="font-mono ml-1 text-gray-500">
+                                                                ({issue.contrast}:1)
+                                                            </span>
                                                         )}
                                                     </p>
-                                                    {issue.aaaStatus && issue.aaaStatus !== '—' && (
-                                                        <p>
-                                                            <strong>Enhanced (cerință 4.5:1): </strong>
-                                                            <StatusBadge status={issue.aaaStatus} />
-                                                        </p>
-                                                    )}
+                                                    {issue.aaaStatus &&
+                                                        issue.aaaStatus !== '—' && (
+                                                            <p>
+                                                                <strong>
+                                                                    Enhanced (4.5:1 requirement):{' '}
+                                                                </strong>
+                                                                <StatusBadge
+                                                                    status={issue.aaaStatus}
+                                                                />
+                                                            </p>
+                                                        )}
                                                 </div>
                                                 {hasImage && (
                                                     <div className="flex justify-center">
-                                                        <img src={issue.previewBase64} alt={`${issue.text} - normal`}
-                                                            className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain" />
+                                                        <img
+                                                            src={issue.previewBase64}
+                                                            alt={`${issue.text} - normal`}
+                                                            className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain"
+                                                        />
                                                     </div>
                                                 )}
                                             </div>
@@ -340,27 +363,43 @@ function App() {
                                             <div className="mb-2 pt-2 border-t border-gray-700 dark:border-gray-400">
                                                 <div className="text-xs text-gray-700 space-y-1 mb-1 dark:text-gray-400 dark:space-y-1">
                                                     <div className="font-mono font-bold flex items-center gap-1">
-                                                        La scroll:
+                                                        On scroll:
                                                         <ColorSwatch color={issue.stickyBgColor} />
-                                                        <span>Bg: {issue.stickyBgColor}</span>
+                                                        <span>Background: {issue.stickyBgColor}</span>
                                                     </div>
                                                     <p>
                                                         <strong>WCAG 1.4.11 (3:1): </strong>
-                                                        <StatusBadge status={issue.stickyWcag1411?.status || 'WARNING'} />
+                                                        <StatusBadge
+                                                            status={
+                                                                issue.stickyWcag1411?.status ||
+                                                                'WARNING'
+                                                            }
+                                                        />
                                                         {issue.stickyContrastRatio && (
-                                                            <span className="font-mono ml-1 text-gray-500">({issue.stickyContrastRatio}:1)</span>
+                                                            <span className="font-mono ml-1 text-gray-500">
+                                                                ({issue.stickyContrastRatio}:1)
+                                                            </span>
                                                         )}
                                                     </p>
                                                     {issue.stickyEnhanced && (
                                                         <p>
-                                                            <strong>Enhanced (cerință 4.5:1): </strong>
-                                                            <StatusBadge status={issue.stickyEnhanced.status} />
+                                                            <strong>
+                                                                Enhanced (4.5:1 requirement):{' '}
+                                                            </strong>
+                                                            <StatusBadge
+                                                                status={
+                                                                    issue.stickyEnhanced.status
+                                                                }
+                                                            />
                                                         </p>
                                                     )}
                                                 </div>
                                                 <div className="flex justify-center">
-                                                    <img src={issue.stickyPreviewBase64} alt={`${issue.text} - sticky`}
-                                                        className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain" />
+                                                    <img
+                                                        src={issue.stickyPreviewBase64}
+                                                        alt={`${issue.text} - sticky`}
+                                                        className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain"
+                                                    />
                                                 </div>
                                             </div>
 
@@ -374,48 +413,55 @@ function App() {
                                                     </div>
                                                 )}
 
-                                                {issue.alt === '' && issue.nonTextType !== 'icon-bg-image' && (
-                                                    <p className="text-orange-600 dark:text-orange-400 italic text-[11px]">
-                                                        ⚠ alt="" — linkul poate fi inaccesibil pentru screen readers
-                                                    </p>
-                                                )}
+                                                {issue.alt === '' &&
+                                                    issue.nonTextType !==
+                                                        'icon-bg-image' && (
+                                                        <p className="text-orange-600 dark:text-orange-400 italic text-[11px]">
+                                                            ⚠ alt="" — this link may be inaccessible to
+                                                            screen reader users
+                                                        </p>
+                                                    )}
 
                                                 {issue.note && (
                                                     <p className="italic text-[11px] text-gray-500 dark:text-gray-500">
-                                                        Notă: {issue.note}
+                                                        Note: {issue.note}
                                                     </p>
                                                 )}
 
                                                 {issue.href && (
                                                     <p className="text-[11px] truncate">
                                                         <strong>Link: </strong>
-                                                        <a href={issue.href} target="_blank" rel="noopener noreferrer"
+                                                        <a
+                                                            href={issue.href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                             className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300"
-                                                            title={issue.href}>
+                                                            title={issue.href}
+                                                        >
                                                             {issue.href}
                                                         </a>
                                                     </p>
                                                 )}
                                             </div>
                                         </>
-
-                                    /* ============================================
-                                       NON-TEXT WITHOUT STICKY — includes disappears-on-sticky
-                                       ============================================ */
                                     ) : isNonText ? (
                                         <>
                                             {/* Preview */}
                                             {hasImage && (
                                                 <div className="my-2 flex justify-center">
-                                                    <img src={issue.previewBase64} alt={issue.text}
-                                                        className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain" />
+                                                    <img
+                                                        src={issue.previewBase64}
+                                                        alt={issue.text}
+                                                        className="max-h-[70px] max-w-full rounded border border-gray-200 dark:border-gray-600 object-contain"
+                                                    />
                                                 </div>
                                             )}
 
                                             {/* Disappears on sticky warning */}
                                             {issue.disappearsOnSticky && (
                                                 <p className="text-orange-600 dark:text-orange-400 italic text-[11px] my-1">
-                                                    ⚠ Elementul dispare la scroll (ascuns în starea sticky)
+                                                    ⚠ This element disappears on scroll
+                                                    (hidden in sticky state)
                                                 </p>
                                             )}
 
@@ -425,16 +471,24 @@ function App() {
                                                     <strong>WCAG 1.4.11 (3:1): </strong>
                                                     <StatusBadge status={issue.aaStatus} />
                                                     {issue.contrast && (
-                                                        <span className="font-mono ml-1 text-gray-500">({issue.contrast}:1)</span>
+                                                        <span className="font-mono ml-1 text-gray-500">
+                                                            ({issue.contrast}:1)
+                                                        </span>
                                                     )}
                                                 </p>
 
-                                                {issue.aaaStatus && issue.aaaStatus !== '—' && (
-                                                    <p>
-                                                        <strong>Enhanced (cerință {issue.aaaRequired}): </strong>
-                                                        <StatusBadge status={issue.aaaStatus} />
-                                                    </p>
-                                                )}
+                                                {issue.aaaStatus &&
+                                                    issue.aaaStatus !== '—' && (
+                                                        <p>
+                                                            <strong>
+                                                                Enhanced (requirement{' '}
+                                                                {issue.aaaRequired}):{' '}
+                                                            </strong>
+                                                            <StatusBadge
+                                                                status={issue.aaaStatus}
+                                                            />
+                                                        </p>
+                                                    )}
 
                                                 {issue.textColor && (
                                                     <div className="font-mono font-bold flex items-center gap-1">
@@ -444,39 +498,42 @@ function App() {
                                                     </div>
                                                 )}
                                                 <div className="font-mono font-bold flex items-center gap-1">
-                                                    Bg:
+                                                    Background:
                                                     <ColorSwatch color={issue.bgColor} />
                                                     <span>{issue.bgColor}</span>
                                                 </div>
 
-                                                {issue.alt === '' && issue.nonTextType !== 'icon-bg-image' && (
-                                                    <p className="text-orange-600 dark:text-orange-400 italic text-[11px]">
-                                                        ⚠ alt="" — linkul poate fi inaccesibil pentru screen readers
-                                                    </p>
-                                                )}
+                                                {issue.alt === '' &&
+                                                    issue.nonTextType !==
+                                                        'icon-bg-image' && (
+                                                        <p className="text-orange-600 dark:text-orange-400 italic text-[11px]">
+                                                            ⚠ alt="" — this link may be inaccessible to
+                                                            screen reader users
+                                                        </p>
+                                                    )}
 
                                                 {issue.note && (
                                                     <p className="italic text-[11px] text-gray-500 dark:text-gray-500">
-                                                        Notă: {issue.note}
+                                                        Note: {issue.note}
                                                     </p>
                                                 )}
 
                                                 {issue.href && (
                                                     <p className="text-[11px] truncate">
                                                         <strong>Link: </strong>
-                                                        <a href={issue.href} target="_blank" rel="noopener noreferrer"
+                                                        <a
+                                                            href={issue.href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                             className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300"
-                                                            title={issue.href}>
+                                                            title={issue.href}
+                                                        >
                                                             {issue.href}
                                                         </a>
                                                     </p>
                                                 )}
                                             </div>
                                         </>
-
-                                    /* ============================================
-                                       TEXT CONTRAST ISSUES (original layout)
-                                       ============================================ */
                                     ) : (
                                         <>
                                             {/* Text preview box */}
@@ -485,41 +542,57 @@ function App() {
                                                 style={{
                                                     backgroundColor: issue.bgColor,
                                                     color: issue.textColor,
-                                                    backgroundImage: hasImage ? `url(${issue.previewBase64})` : 'none',
+                                                    backgroundImage: hasImage
+                                                        ? `url(${issue.previewBase64})`
+                                                        : 'none',
                                                     backgroundSize: 'cover',
                                                     backgroundPosition: 'center',
-                                                    backgroundRepeat: 'no-repeat'
+                                                    backgroundRepeat: 'no-repeat',
                                                 }}
                                             >
                                                 {!hasImage && issue.text}
-                                                {hasImage && <div className="absolute inset-0" title={issue.text}></div>}
+                                                {hasImage && (
+                                                    <div
+                                                        className="absolute inset-0"
+                                                        title={issue.text}
+                                                    ></div>
+                                                )}
                                             </div>
 
                                             {/* Text contrast info */}
                                             <div className="text-xs text-gray-700 dark:text-gray-400 space-y-1">
                                                 <p>
-                                                    <strong>Contrast (folosit): </strong>
-                                                    <span className={`font-mono font-bold ${
-                                                        issue.aaStatus === 'FAIL' ? 'text-red-700 dark:text-red-400'
-                                                        : issue.aaStatus === 'WARNING' ? 'text-yellow-600 dark:text-yellow-400'
-                                                        : 'text-green-700 dark:text-green-400'
-                                                    }`}>
-                                                        {showContrast ? `${showContrast}${isNaN(showContrast) ? '' : ':1'}` : 'n/a'}
+                                                    <strong>Contrast used: </strong>
+                                                    <span
+                                                        className={`font-mono font-bold ${
+                                                            issue.aaStatus === 'FAIL'
+                                                                ? 'text-red-700 dark:text-red-400'
+                                                                : issue.aaStatus === 'WARNING'
+                                                                ? 'text-yellow-600 dark:text-yellow-400'
+                                                                : 'text-green-700 dark:text-green-400'
+                                                        }`}
+                                                    >
+                                                        {showContrast
+                                                            ? `${showContrast}${
+                                                                  isNaN(showContrast)
+                                                                      ? ''
+                                                                      : ':1'
+                                                              }`
+                                                            : 'n/a'}
                                                     </span>
                                                 </p>
 
                                                 <p>
                                                     <strong>
-                                                        AA (cerință{' '}
-                                                        {issue.aaRequired}):{' '}
+                                                        AA (requirement {issue.aaRequired}):{' '}
                                                     </strong>
                                                     <span
                                                         className={`font-mono font-bold ${
                                                             issue.aaStatus === 'FAIL'
                                                                 ? 'text-red-700 dark:text-red-400'
-                                                                : issue.aaStatus === 'WARNING' 
-                                                                    ? 'text-yellow-600 dark:text-yellow-400'
-                                                                    : 'text-green-700 dark:text-green-400'
+                                                                : issue.aaStatus === 'WARNING'
+                                                                ? 'text-yellow-600 dark:text-yellow-400'
+                                                                : 'text-green-700 dark:text-green-400'
                                                         }`}
                                                     >
                                                         {issue.aaStatus}
@@ -528,8 +601,7 @@ function App() {
 
                                                 <p>
                                                     <strong>
-                                                        AAA (cerință{' '}
-                                                        {issue.aaaRequired}):{' '}
+                                                        AAA (requirement {issue.aaaRequired}):{' '}
                                                     </strong>
                                                     <span
                                                         className={`font-mono font-bold ${
@@ -544,27 +616,31 @@ function App() {
 
                                                 {issue.method && (
                                                     <p>
-                                                        <strong>Metodă: </strong>
+                                                        <strong>Method: </strong>
                                                         <span className="font-mono">
                                                             {issue.method}
                                                         </span>
                                                     </p>
                                                 )}
 
-                                                <div className='font-mono font-bold flex items-center gap-1'>
+                                                <div className="font-mono font-bold flex items-center gap-1">
                                                     Text:
                                                     <ColorSwatch color={issue.textColor} />
-                                                    <span className="font-mono font-bold">{issue.textColor}</span>
+                                                    <span className="font-mono font-bold">
+                                                        {issue.textColor}
+                                                    </span>
                                                 </div>
-                                                <div className='font-mono font-bold flex items-center gap-1'>
-                                                    Bg:
+                                                <div className="font-mono font-bold flex items-center gap-1">
+                                                    Background:
                                                     <ColorSwatch color={issue.bgColor} />
-                                                    <span className="font-mono font-bold">{issue.bgColor}</span>
+                                                    <span className="font-mono font-bold">
+                                                        {issue.bgColor}
+                                                    </span>
                                                 </div>
 
                                                 {issue.note && (
                                                     <p className="italic text-[11px] text-gray-500 dark:text-gray-500">
-                                                        Notă: {issue.note}
+                                                        Note: {issue.note}
                                                     </p>
                                                 )}
                                             </div>
@@ -577,14 +653,14 @@ function App() {
                 ) : (
                     <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg">
                         <p className="text-sm font-semibold text-green-800 dark:text-green-300">
-                            Felicitări! Nu au fost găsite probleme majore de
-                            contrast al culorilor.
+                            Great news! No major color contrast issues were
+                            found.
                         </p>
                     </div>
                 )}
 
                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4">
-                    Culori de Fundal (după suprafața vizibilă)
+                    Background Colors (by visible surface area)
                 </h4>
 
                 <div className="space-y-2 mt-2">
@@ -622,16 +698,13 @@ function App() {
                 </div>
 
                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4">
-                    Culori de Text (după relevanță)
+                    Text Colors (by relevance)
                 </h4>
 
                 <ul className="list-none mb-4">
                     {data.colors &&
                         data.colors.map((item, index) => (
-                            <li
-                                key={index}
-                                className="flex items-start mb-2"
-                            >
+                            <li key={index} className="flex items-start mb-2">
                                 <div
                                     className="w-5 h-5 rounded-full mr-2 border border-gray-300 dark:border-gray-600 flex-shrink-0"
                                     style={{
@@ -648,8 +721,7 @@ function App() {
                                         className="text-xs text-gray-500 dark:text-gray-400 italic truncate"
                                         title={item.elements.join(' ')}
                                     >
-                                        Folosit de:{' '}
-                                        {item.elements.join(', ')}
+                                        Used by: {item.elements.join(', ')}
                                     </div>
                                 </div>
                             </li>
@@ -657,18 +729,30 @@ function App() {
                 </ul>
 
                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4">
-                    Fonturi Principale
+                    Primary Fonts
                 </h4>
 
                 <ul className="list-none">
                     {data.fonts &&
                         data.fonts
-                            .filter(font => font.font && !font.font.startsWith("N/A"))
+                            .filter(
+                                (font) =>
+                                    font.font && !font.font.startsWith('N/A')
+                            )
                             .map((font, index) => (
-                                <li key={index} className="text-sm text-gray-700 dark:text-gray-300">
-                                    <span className="font-semibold">{font.font}</span>
+                                <li
+                                    key={index}
+                                    className="text-sm text-gray-700 dark:text-gray-300"
+                                >
+                                    <span className="font-semibold">
+                                        {font.font}
+                                    </span>
                                     <span className="text-gray-500 dark:text-gray-400 ml-1">
-                                        ({font.weights ? font.weights.join(', ') : font.count})
+                                        (
+                                        {font.weights
+                                            ? font.weights.join(', ')
+                                            : font.count}
+                                        )
                                     </span>
                                 </li>
                             ))}
@@ -680,7 +764,7 @@ function App() {
                 {data.siteLogo && (
                     <>
                         <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4">
-                            Logo Site
+                            Site Logo
                         </h4>
                         <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                             <div className="flex justify-center mb-2">
@@ -703,7 +787,7 @@ function App() {
                 {data.topImages && data.topImages.length > 0 && (
                     <>
                         <h4 className="font-semibold text-gray-700 dark:text-gray-300 mt-4">
-                            Primele {data.topImages.length} Imagini (după dimensiune)
+                            Top {data.topImages.length} Images (by size)
                         </h4>
                         <div className="mt-2 grid grid-cols-2 gap-2">
                             {data.topImages.map((img, index) => (
@@ -718,7 +802,10 @@ function App() {
                                             className="max-h-[100px] max-w-full object-contain rounded"
                                         />
                                     </div>
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center truncate" title={img.alt}>
+                                    <p
+                                        className="text-[10px] text-gray-500 dark:text-gray-400 text-center truncate"
+                                        title={img.alt}
+                                    >
                                         {img.width} × {img.height}px
                                         {img.alt ? ` — ${img.alt}` : ''}
                                     </p>
@@ -740,7 +827,7 @@ function App() {
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-stone-100">
-                        Introdu URL-urile Competitorilor
+                        Enter Competitor URLs
                     </h1>
 
                     <button
@@ -765,7 +852,7 @@ function App() {
                         onChange={(e) => setUrls(e.target.value)}
                         rows={4}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100"
-                        placeholder="ex: https://competitor1.com, https://competitor2.com"
+                        placeholder="e.g. https://competitor1.com, https://competitor2.com"
                         disabled={loading}
                     />
 
@@ -777,9 +864,7 @@ function App() {
                                 name="cookies"
                                 checked={analyzeWithCookies}
                                 onChange={(e) =>
-                                    setAnalyzeWithCookies(
-                                        e.target.checked
-                                    )
+                                    setAnalyzeWithCookies(e.target.checked)
                                 }
                                 className="sr-only peer"
                             />
@@ -810,7 +895,7 @@ function App() {
                             htmlFor="cookies"
                             className="cursor-pointer ml-2 text-gray-700 dark:text-gray-300 font-medium"
                         >
-                            Analyze with cookie footer
+                            Analyze with cookie banner visible
                         </label>
                     </div>
 
@@ -819,12 +904,8 @@ function App() {
                         disabled={loading}
                         className="relative mt-2 bg-custom-color dark:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
                     >
-                        <span
-                            className={
-                                loading ? 'opacity-0' : 'opacity-100'
-                            }
-                        >
-                            Generează Raport
+                        <span className={loading ? 'opacity-0' : 'opacity-100'}>
+                            Generate Report
                         </span>
 
                         {loading && (
@@ -840,7 +921,7 @@ function App() {
                         className="mt-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded relative"
                         role="alert"
                     >
-                        <strong className="font-bold">Eroare: </strong>
+                        <strong className="font-bold">Error: </strong>
                         <span className="block sm:inline">{error}</span>
                     </div>
                 )}
